@@ -133,8 +133,7 @@ public class ChatWindow {
 
 			private BufferedReader br;
 			private ChatWindow chatWindow;
-			
-			
+
 			public ReceiveMessageThread(BufferedReader br, ChatWindow chatWindow) {
 				this.br = br;
 				this.chatWindow = chatWindow;
@@ -163,7 +162,7 @@ public class ChatWindow {
 			}
 
 		}
-		
+
 		receiveMessageThread = new ReceiveMessageThread(br, this);
 		receiveMessageThread.start();
 
@@ -189,14 +188,34 @@ public class ChatWindow {
 		if ("".equals(sendMessage)) {
 			return;
 		}
+		if(sendMessage.startsWith("/w ")) {
+			whisper(sendMessage);
+			return;
+		}
 		if ("quit".equals(sendMessage)) {
 			finish();
 			return;
 		}
+		
 		pr.println("message」「" + name + "」「" + sendMessage); // 여기서 보내면서버가 받고 서버가 모든 채팅인원들에게 브로드캐스팅해주면됨.
 		textField.setText("");
 		textField.requestFocus();
 
 		updateTextArea(name + ":" + sendMessage);
+	}
+	
+	
+	// >>>>>> /w 아이디 메세지 -> 이런식으로 입력하면됨
+	private void whisper(String sendMessage) {
+		
+		String whisperMessageTokens [] = sendMessage.split(" ");
+		String receiveUser = whisperMessageTokens[1];
+		// ex) /w 홍길동 안녕하세요 라면 "/w" = 2, " " = 1, "홍길동" = 3, " "= 1 을 더한값 부터 시작하여 마지막까지 메세지이다.
+		String completeSendMessage = sendMessage.substring(2+1+receiveUser.length()+1);
+		System.out.println("completeSendMessage: "+ completeSendMessage);
+		pr.println("whisper」「" + name+"」「"+completeSendMessage+"」「"+receiveUser);
+		textField.setText("");
+		textField.requestFocus();
+		updateTextArea(name + ":" + completeSendMessage+"("+receiveUser+"님에게)");
 	}
 }

@@ -8,16 +8,20 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatServerRecieveThread extends Thread {
 
 	private Socket socket;
 	private List<PrintWriter> printWriterList;
+	Map<String, PrintWriter> pwMap;
 
-	public ChatServerRecieveThread(Socket socket, List<PrintWriter> printWriterList) {
+	public ChatServerRecieveThread(Socket socket, List<PrintWriter> printWriterList, Map<String, PrintWriter> pwMap) {
 		this.socket = socket;
 		this.printWriterList = printWriterList;
+		this.pwMap = pwMap;
 	}
 
 	@Override
@@ -63,23 +67,40 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	public void addPrintWriter(PrintWriter pr) {
-		synchronized (printWriterList) {
-			printWriterList.add(pr);
-		}
-
-	}
-
-	public void removePrintWriter(PrintWriter pr) {
-		synchronized (printWriterList) {
-			printWriterList.remove(pr);
+	public void addUSer(String userName, PrintWriter printWriter) {
+		synchronized (pwMap) {
+			pwMap.put(userName, printWriter);
 		}
 	}
 
-	private void sendMessage(PrintWriter pw, String message) {
-		broadcasting(pw, message);
+	public void deleteUser(String userName) {
+		synchronized (pwMap) {
+			pwMap.remove(userName);
+		}
 	}
 
+	public void addPrintWriter(PrintWriter printWriter) {
+		synchronized (printWriterList) {
+			printWriterList.add(printWriter);
+		}
+	}
+
+	public void removePrintWriter(PrintWriter printWriter) {
+		synchronized (printWriterList) {
+			printWriterList.remove(printWriter);
+		}
+	}
+
+	private void sendMessage(PrintWriter printWriter, String message) {
+		broadcasting(printWriter, message);
+	}
+
+	private void whisper(String receiveWhisperUserName, String message) {
+		synchronized (pwMap) {
+			pwMap.get(receiveWhisperUserName).println("(귓속말)"+message);
+		}
+	}
+	
 	public void broadcasting(PrintWriter printWriter, String message) {
 
 		String messageTokens[] = message.split("」「");
@@ -91,17 +112,28 @@ public class ChatServerRecieveThread extends Thread {
 		switch (messageClassification) {
 		case "login":
 			addPrintWriter(printWriter);
+			addUSer(sendedUserName, printWriter);
 			sendData = sendedUserName + "님이 입장하셨습니다.";
 
 			break;
 		case "message":
 			String messageData = messageTokens[2];
-			sendData = sendedUserName + ":" + messageData;
+			sendData = sendedUserName + " : " + messageData;
 			break;
+		case "whisper":
+			String whisperMessageData = messageTokens[2];
+			String receiveWhisperUserName = messageTokens[3];
+			System.out.println("receiveWhisperUserName: "+ receiveWhisperUserName);
+			System.out.println("sendedUserName: "+ sendedUserName);
+			sendData = sendedUserName + " : " + whisperMessageData;
+			whisper(receiveWhisperUserName, sendData);
+			return;
 		case "logout":
 			removePrintWriter(printWriter);
+			deleteUser(sendedUserName);
 			sendData = sendedUserName + "님이 퇴장하셨습니다.";
 			break;
+			
 		default:
 			break;
 		}
@@ -115,4 +147,5 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
+	
 }

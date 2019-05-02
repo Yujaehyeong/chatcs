@@ -13,7 +13,7 @@ public class ChatClientApp {
 	public static void main(String[] args) {
 		String name = null;
 		Scanner scanner = new Scanner(System.in);
-
+		
 		while (true) {
 
 			System.out.println("대화명을 입력하세요.");
