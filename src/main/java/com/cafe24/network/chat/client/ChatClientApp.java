@@ -19,26 +19,26 @@ public class ChatClientApp {
 			System.out.println("대화명을 입력하세요.");
 			System.out.print(">>> ");
 			name = scanner.nextLine();
-			
+
 			if (name.isEmpty() == false) {
 				break;
 			}
-			
+
 			System.out.println("대화명은 한글자 이상 입력해야 합니다.\n");
 		}
 		
 		// 2. 소켓 생성
 		Socket socket = new Socket();
-		
+
 		try {
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		scanner.close();
-		
+
 		new ChatWindow(name, socket).show();
 	}
 

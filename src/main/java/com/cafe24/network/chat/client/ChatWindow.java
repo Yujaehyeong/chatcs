@@ -33,8 +33,7 @@ public class ChatWindow {
 	private Socket socket;
 	private BufferedReader br;
 	private PrintWriter pr;
-	private Thread receiveMessageThread;
-
+	
 	public ChatWindow(String name, Socket socket) {
 		this.name = name;
 		frame = new Frame(name);
@@ -63,7 +62,6 @@ public class ChatWindow {
 	}
 
 	private void createStream() {
-
 		// IOStream 생성(받아오기)
 		try {
 			br = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "utf-8"));
@@ -158,28 +156,23 @@ public class ChatWindow {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
 			}
-
 		}
-
-		receiveMessageThread = new ReceiveMessageThread(br, this);
-		receiveMessageThread.start();
+		
+		new ReceiveMessageThread(br, this).start();;
 
 	}
 
 	private void login() {
-		pr.println("login」「" + name);
+		sendMessage("login」「" + name);
 	}
 
 	private void logout() {
-		pr.println("logout」「" + name);
+		sendMessage("logout」「" + name);
 	}
 
 	private void updateTextArea(String receivedMessage) {
-
 		textArea.append(receivedMessage + "\n");
-
 	}
 
 	private void sendMessage() { // 여기서 printWriter 해주면됨
@@ -188,7 +181,7 @@ public class ChatWindow {
 		if ("".equals(sendMessage)) {
 			return;
 		}
-		if(sendMessage.startsWith("/w ")) {
+		if (sendMessage.startsWith("/w ")) {
 			whisper(sendMessage);
 			return;
 		}
@@ -196,26 +189,31 @@ public class ChatWindow {
 			finish();
 			return;
 		}
-		
-		pr.println("message」「" + name + "」「" + sendMessage); // 여기서 보내면서버가 받고 서버가 모든 채팅인원들에게 브로드캐스팅해주면됨.
+
+		sendMessage("message」「" + name + "」「" + sendMessage); // 여기서 보내면서버가 받고 서버가 모든 채팅인원들에게 브로드캐스팅해주면됨.
 		textField.setText("");
 		textField.requestFocus();
 
 		updateTextArea(name + ":" + sendMessage);
 	}
-	
-	
+
 	// >>>>>> /w 아이디 메세지 -> 이런식으로 입력하면됨
 	private void whisper(String sendMessage) {
-		
-		String whisperMessageTokens [] = sendMessage.split(" ");
+
+		String whisperMessageTokens[] = sendMessage.split(" ");
 		String receiveUser = whisperMessageTokens[1];
-		// ex) /w 홍길동 안녕하세요 라면 "/w" = 2, " " = 1, "홍길동" = 3, " "= 1 을 더한값 부터 시작하여 마지막까지 메세지이다.
-		String completeSendMessage = sendMessage.substring(2+1+receiveUser.length()+1);
-		System.out.println("completeSendMessage: "+ completeSendMessage);
-		pr.println("whisper」「" + name+"」「"+completeSendMessage+"」「"+receiveUser);
+		// ex) /w 홍길동 안녕하세요 라면 "/w" = 2, " " = 1, "홍길동" = 3, " "= 1 을 더한값 부터 시작하여 마지막까지
+		// 메세지이다.
+		String completeSendMessage = sendMessage.substring(2 + 1 + receiveUser.length() + 1);
+		sendMessage("whisper」「" + name + "」「" + completeSendMessage + "」「" + receiveUser);
+
 		textField.setText("");
 		textField.requestFocus();
-		updateTextArea(name + ":" + completeSendMessage+"("+receiveUser+"님에게)");
+		updateTextArea(name + ":" + completeSendMessage + "(" + receiveUser + "님에게)");
+	}
+
+	public void sendMessage(String sendMessage) {
+		// 모든 메세지 여기서 전송
+		pr.println(sendMessage);
 	}
 }

@@ -67,7 +67,7 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	private void messageInspect(PrintWriter printWriter, String message) {
+	public void messageInspect(PrintWriter printWriter, String message) {
 
 		String messageTokens[] = message.split("」「");
 		String messageClassification = messageTokens[0];
@@ -130,7 +130,7 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	private void whisper(String sendedUserName, String receiveWhisperUserName, String message) {
+	public void whisper(String sendedUserName, String receiveWhisperUserName, String message) {
 		
 		synchronized (pwMap) {
 			if (!pwMap.containsKey(receiveWhisperUserName)) {
@@ -140,7 +140,7 @@ public class ChatServerRecieveThread extends Thread {
 			pwMap.get(receiveWhisperUserName).println("(귓속말)" + message);
 		}
 	}
-
+	
 	public void broadcasting(PrintWriter printWriter, String sendData) {
 		synchronized (printWriterList) {
 			for (PrintWriter pw : printWriterList) {

@@ -47,7 +47,7 @@ public class ChatServer {
 				e.printStackTrace();
 			}
 		}
-
+		
 	}
 
 	public static void log(String log) {
