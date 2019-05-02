@@ -29,7 +29,7 @@ public class ChatClientApp {
 		
 		// 2. 소켓 생성
 		Socket socket = new Socket();
-
+		
 		try {
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
 			

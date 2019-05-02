@@ -11,11 +11,10 @@ import java.util.List;
 public class ChatServer {
 
 	private static final int PORT = 7000;
-	private static List<PrintWriter> printWriterList;
 
 	public static void main(String[] args) {
 
-		printWriterList = new ArrayList<>();
+		List<PrintWriter> printWriterList = new ArrayList<>();
 		ServerSocket serverSocket = null;
 		try {
 			// 1. 서버소켓 생성
@@ -28,7 +27,7 @@ public class ChatServer {
 			while (true) {
 				// 3. accept
 				Socket socket = serverSocket.accept(); // blocking - connect할 동안 대기
-				Thread thread = new ChatServerRecieveThread(socket);
+				Thread thread = new ChatServerRecieveThread(socket, printWriterList);
 				thread.start();
 			}
 
@@ -48,50 +47,6 @@ public class ChatServer {
 
 	}
 
-	public static void broadcasting(PrintWriter printWriter, String message) {
-
-		String messageTokens[] = message.split("」「");
-		String messageClassification = messageTokens[0];
-		String sendedUserName = messageTokens[1];
-		
-
-		String sendData = "";
-
-		switch (messageClassification) {
-		case "login":
-			ChatServer.addPrintWriter(printWriter);
-			sendData = sendedUserName+ "님이 입장하셨습니다.";
-			
-			break;
-		case "message":
-			String messageData = messageTokens[2];
-			sendData = sendedUserName+ ":" + messageData;
-			break;
-		case "logout":
-			
-			removePrintWriter(printWriter);
-			sendData = sendedUserName+ "님이 퇴장하셨습니다.";
-			break;
-		default:
-			break;
-		}
-		
-		for (PrintWriter pw : printWriterList) {
-			System.out.println("printWriterList에서 메세지 전송");
-			if (pw != printWriter) {
-				System.out.println("printWriterList에서 메세지 해당 pw 제외하고");
-				pw.println(sendData);
-			}
-		}
-	}
-
-	public static void addPrintWriter(PrintWriter pr) {
-		printWriterList.add(pr);
-	}
-	public static void removePrintWriter(PrintWriter pr) {
-		printWriterList.remove(pr);
-	}
-	
 	public static void log(String log) {
 		System.out.println("[server#" + Thread.currentThread().getId() + log + "]");
 	}

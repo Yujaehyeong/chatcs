@@ -8,15 +8,18 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.List;
 
 public class ChatServerRecieveThread extends Thread {
 
 	private Socket socket;
+	private List<PrintWriter> printWriterList;
 
-	public ChatServerRecieveThread(Socket socket) {
+	public ChatServerRecieveThread(Socket socket, List<PrintWriter> printWriterList) {
 		this.socket = socket;
+		this.printWriterList = printWriterList;
 	}
-	
+
 	@Override
 	public void run() {
 
@@ -60,7 +63,56 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	private void sendMessage(PrintWriter pw, String message) {
-		ChatServer.broadcasting(pw, message);
+	public void addPrintWriter(PrintWriter pr) {
+		synchronized (printWriterList) {
+			printWriterList.add(pr);
+		}
+
 	}
+
+	public void removePrintWriter(PrintWriter pr) {
+		synchronized (printWriterList) {
+			printWriterList.remove(pr);
+		}
+	}
+
+	private void sendMessage(PrintWriter pw, String message) {
+		broadcasting(pw, message);
+	}
+
+	public void broadcasting(PrintWriter printWriter, String message) {
+
+		String messageTokens[] = message.split("」「");
+		String messageClassification = messageTokens[0];
+		String sendedUserName = messageTokens[1];
+
+		String sendData = "";
+
+		switch (messageClassification) {
+		case "login":
+			addPrintWriter(printWriter);
+			sendData = sendedUserName + "님이 입장하셨습니다.";
+
+			break;
+		case "message":
+			String messageData = messageTokens[2];
+			sendData = sendedUserName + ":" + messageData;
+			break;
+		case "logout":
+			removePrintWriter(printWriter);
+			sendData = sendedUserName + "님이 퇴장하셨습니다.";
+			break;
+		default:
+			break;
+		}
+		
+		synchronized (printWriterList) {
+			for (PrintWriter pw : printWriterList) {
+				if (pw != printWriter) {
+					pw.println(sendData);
+				}
+			}
+		}
+	}
+
 }

@@ -34,7 +34,7 @@ public class ChatWindow {
 	private BufferedReader br;
 	private PrintWriter pr;
 	private Thread receiveMessageThread;
-	
+
 	public ChatWindow(String name, Socket socket) {
 		this.name = name;
 		frame = new Frame(name);
@@ -132,12 +132,12 @@ public class ChatWindow {
 		class ReceiveMessageThread extends Thread {
 
 			private BufferedReader br;
-			private ChatWindow cw;
-
-			public ReceiveMessageThread(BufferedReader br, ChatWindow cw) {
-
+			private ChatWindow chatWindow;
+			
+			
+			public ReceiveMessageThread(BufferedReader br, ChatWindow chatWindow) {
 				this.br = br;
-				this.cw = cw;
+				this.chatWindow = chatWindow;
 			}
 
 			@Override
@@ -151,11 +151,11 @@ public class ChatWindow {
 						if (data == null) {
 							break;
 						}
-						cw.updateTextArea(data);
+						chatWindow.updateTextArea(data);
 					}
 
 				} catch (SocketException e) {
-					e.printStackTrace();
+					System.out.println("sudden close");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -163,7 +163,7 @@ public class ChatWindow {
 			}
 
 		}
-
+		
 		receiveMessageThread = new ReceiveMessageThread(br, this);
 		receiveMessageThread.start();
 
