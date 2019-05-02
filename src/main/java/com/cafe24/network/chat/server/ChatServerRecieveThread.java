@@ -72,10 +72,12 @@ public class ChatServerRecieveThread extends Thread {
 		String messageTokens[] = message.split("」「");
 		String messageClassification = messageTokens[0];
 		String sendedUserName = messageTokens[1];
-
 		String sendData = "";
-
+		
 		switch (messageClassification) {
+		case "nameOverlapCheck":
+			nameOverlapCheck(sendedUserName, printWriter);
+			break;
 		case "login":
 			addPrintWriter(printWriter);
 			addUSer(sendedUserName, printWriter);
@@ -105,7 +107,17 @@ public class ChatServerRecieveThread extends Thread {
 		}
 
 	}
-
+	
+	public void nameOverlapCheck(String userName, PrintWriter printWriter) {
+		synchronized (pwMap) {
+			if(pwMap.containsKey(userName)) {
+				printWriter.println("overlap");
+			}else {
+				printWriter.println("success");
+			}
+		}
+	}
+	
 	public void addUSer(String userName, PrintWriter printWriter) {
 		synchronized (pwMap) {
 			pwMap.put(userName, printWriter);

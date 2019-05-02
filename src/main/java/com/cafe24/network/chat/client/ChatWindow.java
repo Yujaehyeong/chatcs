@@ -32,7 +32,7 @@ public class ChatWindow {
 	private String name;
 	private Socket socket;
 	private BufferedReader br;
-	private PrintWriter pr;
+	private PrintWriter pw;
 	
 	public ChatWindow(String name, Socket socket) {
 		this.name = name;
@@ -66,7 +66,7 @@ public class ChatWindow {
 		try {
 			br = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "utf-8"));
 			// true를 넣어줌으로써 Auto flush 해줌
-			pr = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "utf-8"), true);
+			pw = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "utf-8"), true);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -211,9 +211,9 @@ public class ChatWindow {
 		textField.requestFocus();
 		updateTextArea(name + ":" + completeSendMessage + "(" + receiveUser + "님에게)");
 	}
-
+	
 	public void sendMessage(String sendMessage) {
 		// 모든 메세지 여기서 전송
-		pr.println(sendMessage);
+		pw.println(sendMessage);
 	}
 }

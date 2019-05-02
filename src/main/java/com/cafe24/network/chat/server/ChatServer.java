@@ -33,7 +33,7 @@ public class ChatServer {
 				Thread thread = new ChatServerRecieveThread(socket, printWriterList, pwMap);
 				thread.start();
 			}
-
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
