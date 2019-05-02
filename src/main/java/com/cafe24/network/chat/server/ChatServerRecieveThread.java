@@ -46,8 +46,8 @@ public class ChatServerRecieveThread extends Thread {
 					break;
 				}
 
-				// 6. 데이터 쓰기
-				sendMessage(pr, data);
+				// 6. 메세지검사
+				messageInspect(pr, data);
 
 			}
 		} catch (SocketException e) {
@@ -65,6 +65,45 @@ public class ChatServerRecieveThread extends Thread {
 			}
 
 		}
+	}
+
+	private void messageInspect(PrintWriter printWriter, String message) {
+
+		String messageTokens[] = message.split("」「");
+		String messageClassification = messageTokens[0];
+		String sendedUserName = messageTokens[1];
+
+		String sendData = "";
+
+		switch (messageClassification) {
+		case "login":
+			addPrintWriter(printWriter);
+			addUSer(sendedUserName, printWriter);
+			sendData = sendedUserName + "님이 입장하셨습니다.";
+			broadcasting(printWriter, sendData);
+			break;
+		case "message":
+			String messageData = messageTokens[2];
+			sendData = sendedUserName + " : " + messageData;
+			broadcasting(printWriter, sendData);
+			break;
+		case "whisper":
+			String whisperMessageData = messageTokens[2];
+			String receiveWhisperUserName = messageTokens[3];
+			sendData = sendedUserName + " : " + whisperMessageData;
+			whisper(sendedUserName, receiveWhisperUserName, sendData);
+			break;
+		case "logout":
+			removePrintWriter(printWriter);
+			deleteUser(sendedUserName);
+			sendData = sendedUserName + "님이 퇴장하셨습니다.";
+			broadcasting(printWriter, sendData);
+			break;
+
+		default:
+			break;
+		}
+
 	}
 
 	public void addUSer(String userName, PrintWriter printWriter) {
@@ -91,53 +130,18 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	private void sendMessage(PrintWriter printWriter, String message) {
-		broadcasting(printWriter, message);
-	}
-
-	private void whisper(String receiveWhisperUserName, String message) {
-		synchronized (pwMap) {
-			pwMap.get(receiveWhisperUserName).println("(귓속말)"+message);
-		}
-	}
-	
-	public void broadcasting(PrintWriter printWriter, String message) {
-
-		String messageTokens[] = message.split("」「");
-		String messageClassification = messageTokens[0];
-		String sendedUserName = messageTokens[1];
-
-		String sendData = "";
-
-		switch (messageClassification) {
-		case "login":
-			addPrintWriter(printWriter);
-			addUSer(sendedUserName, printWriter);
-			sendData = sendedUserName + "님이 입장하셨습니다.";
-
-			break;
-		case "message":
-			String messageData = messageTokens[2];
-			sendData = sendedUserName + " : " + messageData;
-			break;
-		case "whisper":
-			String whisperMessageData = messageTokens[2];
-			String receiveWhisperUserName = messageTokens[3];
-			System.out.println("receiveWhisperUserName: "+ receiveWhisperUserName);
-			System.out.println("sendedUserName: "+ sendedUserName);
-			sendData = sendedUserName + " : " + whisperMessageData;
-			whisper(receiveWhisperUserName, sendData);
-			return;
-		case "logout":
-			removePrintWriter(printWriter);
-			deleteUser(sendedUserName);
-			sendData = sendedUserName + "님이 퇴장하셨습니다.";
-			break;
-			
-		default:
-			break;
-		}
+	private void whisper(String sendedUserName, String receiveWhisperUserName, String message) {
 		
+		synchronized (pwMap) {
+			if (!pwMap.containsKey(receiveWhisperUserName)) {
+				pwMap.get(sendedUserName).println(receiveWhisperUserName+ "님이 없습니다.");
+				return;
+			}
+			pwMap.get(receiveWhisperUserName).println("(귓속말)" + message);
+		}
+	}
+
+	public void broadcasting(PrintWriter printWriter, String sendData) {
 		synchronized (printWriterList) {
 			for (PrintWriter pw : printWriterList) {
 				if (pw != printWriter) {
@@ -147,5 +151,4 @@ public class ChatServerRecieveThread extends Thread {
 		}
 	}
 
-	
 }

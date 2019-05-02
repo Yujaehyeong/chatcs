@@ -19,7 +19,7 @@ public class ChatClientApp {
 			System.out.println("대화명을 입력하세요.");
 			System.out.print(">>> ");
 			name = scanner.nextLine();
-
+			
 			if (name.isEmpty() == false) {
 				break;
 			}
